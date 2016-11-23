@@ -19,5 +19,25 @@ The released versions are available on [xsltiny.sf.net](https://sourceforge.net/
 java -jar xsltiny.jar -c context.xml -t dialect.xml -d data.xml
 ```
 
+## Integrate into your maven project
+```XML
+  <repositories>
+    <repository>
+      <id>myMavenRepo.read</id>
+      <url>https://mymavenrepo.com/repo/0qo9dAdBcLRywnctciNm/</url>
+    </repository>
+    ...
+  </repositories>
+  <dependencies>
+    <dependency>
+      <groupId>net.sf.xsltiny</groupId>
+      <artifactId>xsltiny</artifactId>
+      <version>1.0</version>
+      <scope>compile</scope>
+    </dependency>
+    ...
+  </dependencies>
+```
+
 # Examples
 [osql.sf.net](https://sourceforge.net/projects/osql/) is an example of use of xsltiny
