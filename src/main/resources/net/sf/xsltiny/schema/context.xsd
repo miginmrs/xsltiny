@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:d="http://xsltiny.sf.net/document"
+           xmlns:xslm="alias://xsl/pure"
+           xmlns:xsli="alias://xsl/item"
+           xmlns="http://xsltiny.sf.net/context"
+           targetNamespace="http://xsltiny.sf.net/context"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:import namespace="http://xsltiny.sf.net/document" schemaLocation="document.xsd"/>
+    <xs:import namespace="alias://xsl/pure" schemaLocation="xslpure.xsd"/>
+    <xs:import namespace="alias://xsl/item" schemaLocation="xslitem.xsd"/>
+    <xs:element name="item" type="xslm:item"/>
+    <xs:element name="document">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="properties" type="d:properties">
+                    <xs:key name="properties">
+                        <xs:selector xpath="d:property"/>
+                        <xs:field xpath="@name"/>
+                    </xs:key>
+                </xs:element>
+                <xs:element name="default-context" minOccurs="0">
+                    <xs:complexType>
+                        <xs:group ref="context"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="context" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:group ref="context"/>
+                        <xs:attribute name="name" use="required" type="xs:string"/>
+                        <xs:attribute name="path" use="required" type="xs:string"/>
+                        <xs:attribute name="length" use="optional" type="xs:int"/>
+                        <xs:attribute name="parent" use="optional" type="xs:string"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+        <xs:key name="name">
+            <xs:selector xpath="context"/>
+            <xs:field xpath="@name"/>
+        </xs:key>
+        <xs:keyref name="parent" refer="name">
+            <xs:selector xpath="context"/>
+            <xs:field xpath="@parent"/>
+        </xs:keyref>
+    </xs:element>
+    <xs:attributeGroup name="contextaware">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="section" use="optional" type="xs:string"/>
+        <xs:attribute name="link" use="optional" fixed="yes"/>
+    </xs:attributeGroup>
+    <xs:group name="context">
+        <xs:sequence>
+            <xs:element name="attribute" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="name" use="required" type="xs:string"/>
+                    <xs:attribute name="path" use="required" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="link">
+                    <xs:complexType>
+                        <xs:attributeGroup ref="contextaware"/>
+                        <xs:attribute name="test" use="required" type="xs:string"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="use" type="xslm:use"/>
+                <xs:element name="list" type="xsli:list"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:group>
+</xs:schema>

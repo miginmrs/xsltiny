@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:d="http://xsltiny.sf.net/document"
+           xmlns="alias://xsl/content"
+           targetNamespace="alias://xsl/content"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:import namespace="http://xsltiny.sf.net/document" schemaLocation="document.xsd"/>
+    <xs:redefine schemaLocation="../../../../org/w3/xslt20.nons.xsd">
+        <xs:group name="result-elements">
+            <xs:choice>
+                <xs:element ref="d:content"/>
+            </xs:choice>
+        </xs:group>
+    </xs:redefine>
+    <xs:complexType mixed="true" name="template">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:group ref="sequence-constructor-group"/>
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+</xs:schema>

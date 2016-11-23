@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="alias://xsl/pure"
+           xmlns:ctx="http://xsltiny.sf.net/context"
+           xmlns="alias://xsl/pure"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:import namespace="http://xsltiny.sf.net/context" schemaLocation="context.xsd"/>
+    <xs:redefine schemaLocation="../../../../org/w3/xslt20.nons.xsd">
+        <xs:group name="result-elements">
+            <xs:choice>
+                <xs:element ref="literal-result-element"/>
+            </xs:choice>
+        </xs:group>
+    </xs:redefine>
+    <xs:complexType mixed="true" name="item">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:group ref="sequence-constructor-group"/>
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType mixed="true" name="mapper">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:group ref="sequence-constructor-group"/>
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="use" mixed="true">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:group ref="sequence-constructor-group"/>
+        </xs:choice>
+        <xs:attributeGroup ref="ctx:contextaware"/>
+    </xs:complexType>
+    <xs:complexType name="header">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="declaration"/>
+        </xs:choice>
+    </xs:complexType>
+</xs:schema>

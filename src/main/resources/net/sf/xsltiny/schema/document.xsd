@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:xslm="alias://xsl/pure"
+           xmlns:xslt="alias://xsl/content"
+           xmlns:d="http://xsltiny.sf.net/document"
+           targetNamespace="http://xsltiny.sf.net/document"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:import namespace="alias://xsl/pure" schemaLocation="xslpure.xsd"/>
+    <xs:import namespace="alias://xsl/content" schemaLocation="xslcontent.xsd"/>
+    <xs:element name="content" type="d:empty"/>
+    <xs:element name="document" type="d:document">
+        <xs:key name="mapper">
+            <xs:selector xpath="d:define/d:mapper"/>
+            <xs:field xpath="@name"/>
+        </xs:key>
+        <xs:key name="template">
+            <xs:selector xpath="d:define/d:template"/>
+            <xs:field xpath="@name"/>
+        </xs:key>
+        <xs:keyref name="map" refer="d:mapper">
+            <xs:selector xpath=".//d:map"/>
+            <xs:field xpath="@name"/>
+        </xs:keyref>
+        <xs:keyref name="with" refer="d:template">
+            <xs:selector xpath=".//d:with"/>
+            <xs:field xpath="@name"/>
+        </xs:keyref>
+    </xs:element>
+
+    <xs:group name="content">
+        <xs:choice>
+            <xs:element name="var" type="d:namedcontent"/>
+            <xs:element name="ivar" type="d:nameditems"/>
+            <xs:element name="if" type="d:ifcontent"/>
+            <xs:element name="link" type="d:namedcontent"/>
+            <xs:element name="map" type="d:namedcontent"/>
+            <xs:element name="for" type="d:namedcontent"/>
+            <xs:element name="join" type="d:joinitems"/>
+            <xs:element name="use" type="d:namedempty"/>
+            <xs:element name="get" type="d:namedempty"/>
+            <xs:element name="lay" type="d:namedempty"/>
+            <xs:element name="with" type="d:namedfreecontent"/>
+        </xs:choice>
+    </xs:group>
+    <xs:group name="item">
+        <xs:choice>
+            <xs:element name="var" type="d:namedcontent"/>
+            <xs:element name="ivar" type="d:nameditems"/>
+            <xs:element name="ilay" type="d:namedempty"/>
+            <xs:element name="if" type="d:ifitems"/>
+            <xs:element name="link" type="d:nameditems"/>
+            <xs:element name="map" type="d:nameditems"/>
+            <xs:element name="for" type="d:foritems"/>
+            <xs:element name="item" type="d:content"/>
+            <xs:element name="list" type="d:namedempty"/>
+            <xs:element name="with" type="d:freeitems"/>
+        </xs:choice>
+    </xs:group>
+    <xs:group name="freeitem">
+        <xs:choice>
+            <xs:element name="var" type="d:namedfreecontent"/>
+            <xs:element name="ivar" type="d:namedfreeitems"/>
+            <xs:element name="ilay" type="d:namedempty"/>
+            <xs:element name="item" type="d:freecontent"/>
+            <xs:element name="map" type="d:freeitems"/>
+            <xs:element name="with" type="d:freeitems"/>
+        </xs:choice>
+    </xs:group>
+    <xs:group name="freecontent">
+        <xs:choice>
+            <xs:element name="var" type="d:namedcontent"/>
+            <xs:element name="ivar" type="d:nameditems"/>
+            <xs:element name="lay" type="d:namedempty"/>
+            <xs:element name="map" type="d:namedfreecontent"/>
+            <xs:element name="with" type="d:namedfreecontent"/>
+            <xs:element name="join" type="d:joinfreeitems"/>
+        </xs:choice>
+    </xs:group>
+    <xs:complexType name="document">
+        <xs:sequence>
+            <xs:element name="properties" type="d:properties">
+                <xs:key name="property">
+                    <xs:selector xpath="d:property"/>
+                    <xs:field xpath="@name"/>
+                </xs:key>
+            </xs:element>
+            <xs:element name="define" type="d:define" minOccurs="0"/>
+            <xs:element name="section" type="d:namedcontent" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="properties">
+        <xs:sequence>
+            <xs:element name="property" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="name" type="xs:string" use="required"/>
+                    <xs:attribute name="value" type="xs:string" use="optional"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="define">
+        <xs:sequence>
+            <xs:element name="header" type="xslm:header" minOccurs="0"/>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="mapper" type="xslm:mapper"/>
+                <xs:element name="template" type="xslt:template"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="namedempty">
+        <xs:choice/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="empty">
+        <xs:choice/>
+    </xs:complexType>
+    <xs:complexType name="nameditems">
+        <xs:sequence>
+            <xs:group ref="d:item" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="foritems">
+        <xs:sequence>
+            <xs:group ref="d:item" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="d:for"/>
+    </xs:complexType>
+    <xs:complexType name="ifitems">
+        <xs:sequence>
+            <xs:group ref="d:item" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="d:if"/>
+    </xs:complexType>
+    <xs:complexType name="joinitems">
+        <xs:sequence>
+            <xs:group ref="d:item" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="delimiter" use="required" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="joinfreeitems">
+        <xs:sequence>
+            <xs:group ref="d:freeitem" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="delimiter" use="required" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="namedfreeitems" mixed="true">
+        <xs:sequence>
+            <xs:group ref="d:freeitem" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="freeitems">
+        <xs:sequence>
+            <xs:group ref="d:freeitem" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="content" mixed="true">
+        <xs:sequence>
+            <xs:group ref="d:content" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="freecontent" mixed="true">
+        <xs:sequence>
+            <xs:group ref="d:freecontent" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="namedcontent" mixed="true">
+        <xs:sequence>
+            <xs:group ref="d:content" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:attributeGroup name="if">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="not" type="xs:string" fixed="yes" use="optional"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="for">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="parent" fixed="yes" use="optional"/>
+        <xs:attribute name="root" fixed="yes" use="optional"/>
+    </xs:attributeGroup>
+    <xs:complexType name="ifcontent" mixed="true">
+        <xs:sequence>
+            <xs:group ref="d:content" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="d:if"/>
+    </xs:complexType>
+    <xs:complexType name="forcontent" mixed="true">
+        <xs:sequence>
+            <xs:group ref="d:content" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="d:for"/>
+    </xs:complexType>
+    <xs:complexType name="namedfreecontent" mixed="true">
+        <xs:sequence>
+            <xs:group ref="d:freecontent" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="iffreecontent" mixed="true">
+        <xs:sequence>
+            <xs:group ref="d:freecontent" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="d:if"/>
+    </xs:complexType>
+</xs:schema>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:ctx="http://xsltiny.sf.net/context"
+           xmlns="alias://xsl/item"
+           targetNamespace="alias://xsl/item"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:import namespace="http://xsltiny.sf.net/document" schemaLocation="document.xsd"/>
+    <xs:import namespace="http://xsltiny.sf.net/context" schemaLocation="context.xsd"/>
+    <xs:redefine schemaLocation="../../../../org/w3/xslt20.nons.xsd">
+        <xs:group name="result-elements">
+            <xs:choice>
+                <xs:element ref="ctx:item"/>
+            </xs:choice>
+        </xs:group>
+    </xs:redefine>
+    <xs:complexType name="list">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:group ref="sequence-constructor-group"/>
+        </xs:choice>
+        <xs:attributeGroup ref="ctx:contextaware"/>
+    </xs:complexType>
+</xs:schema>
