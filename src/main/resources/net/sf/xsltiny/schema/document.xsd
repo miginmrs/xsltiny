@@ -7,7 +7,6 @@
            elementFormDefault="qualified" attributeFormDefault="unqualified">
     <xs:import namespace="alias://xsl/pure" schemaLocation="xslpure.xsd"/>
     <xs:import namespace="alias://xsl/content" schemaLocation="xslcontent.xsd"/>
-    <xs:element name="content" type="d:empty"/>
     <xs:element name="document" type="d:document">
         <xs:key name="mapper">
             <xs:selector xpath="d:define/d:mapper"/>
@@ -15,6 +14,14 @@
         </xs:key>
         <xs:key name="template">
             <xs:selector xpath="d:define/d:template"/>
+            <xs:field xpath="@name"/>
+        </xs:key>
+        <xs:key name="fragment">
+            <xs:selector xpath="d:define/d:fragment"/>
+            <xs:field xpath="@name"/>
+        </xs:key>
+        <xs:key name="section">
+            <xs:selector xpath="d:section"/>
             <xs:field xpath="@name"/>
         </xs:key>
         <xs:keyref name="map" refer="d:mapper">
@@ -25,21 +32,33 @@
             <xs:selector xpath=".//d:with"/>
             <xs:field xpath="@name"/>
         </xs:keyref>
+        <xs:keyref name="put" refer="d:fragment">
+            <xs:selector xpath=".//d:put"/>
+            <xs:field xpath="@name"/>
+        </xs:keyref>
+        <xs:keyref name="import" refer="d:section">
+            <xs:selector xpath=".//d:import"/>
+            <xs:field xpath="@name"/>
+        </xs:keyref>
     </xs:element>
 
     <xs:group name="content">
         <xs:choice>
+            <xs:element name="br" type="d:empty"/>
+            <xs:element name="out" type="d:text"/>
             <xs:element name="var" type="d:namedcontent"/>
             <xs:element name="ivar" type="d:nameditems"/>
             <xs:element name="if" type="d:ifcontent"/>
             <xs:element name="link" type="d:namedcontent"/>
             <xs:element name="map" type="d:namedcontent"/>
-            <xs:element name="for" type="d:namedcontent"/>
+            <xs:element name="for" type="d:forcontent"/>
             <xs:element name="join" type="d:joinitems"/>
             <xs:element name="use" type="d:namedempty"/>
             <xs:element name="get" type="d:namedempty"/>
             <xs:element name="lay" type="d:namedempty"/>
+            <xs:element name="put" type="d:namedempty"/>
             <xs:element name="with" type="d:namedfreecontent"/>
+            <xs:element name="import" type="d:namedempty"/>
         </xs:choice>
     </xs:group>
     <xs:group name="item">
@@ -53,7 +72,7 @@
             <xs:element name="for" type="d:foritems"/>
             <xs:element name="item" type="d:content"/>
             <xs:element name="list" type="d:namedempty"/>
-            <xs:element name="with" type="d:freeitems"/>
+            <xs:element name="with" type="d:namedfreeitems"/>
         </xs:choice>
     </xs:group>
     <xs:group name="freeitem">
@@ -62,15 +81,18 @@
             <xs:element name="ivar" type="d:namedfreeitems"/>
             <xs:element name="ilay" type="d:namedempty"/>
             <xs:element name="item" type="d:freecontent"/>
-            <xs:element name="map" type="d:freeitems"/>
-            <xs:element name="with" type="d:freeitems"/>
+            <xs:element name="map" type="d:namedfreeitems"/>
+            <xs:element name="with" type="d:namedfreeitems"/>
         </xs:choice>
     </xs:group>
     <xs:group name="freecontent">
         <xs:choice>
+            <xs:element name="br" type="d:empty"/>
+            <xs:element name="out" type="d:text"/>
             <xs:element name="var" type="d:namedcontent"/>
             <xs:element name="ivar" type="d:nameditems"/>
             <xs:element name="lay" type="d:namedempty"/>
+            <xs:element name="put" type="d:namedempty"/>
             <xs:element name="map" type="d:namedfreecontent"/>
             <xs:element name="with" type="d:namedfreecontent"/>
             <xs:element name="join" type="d:joinfreeitems"/>
@@ -78,6 +100,12 @@
     </xs:group>
     <xs:complexType name="document">
         <xs:sequence>
+            <xs:element name="output" minOccurs="0">
+                <xs:complexType>
+                    <xs:choice/>
+                    <xs:attribute name="delimiter" type="xs:string" use="optional"/>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="properties" type="d:properties">
                 <xs:key name="property">
                     <xs:selector xpath="d:property"/>
@@ -85,7 +113,7 @@
                 </xs:key>
             </xs:element>
             <xs:element name="define" type="d:define" minOccurs="0"/>
-            <xs:element name="section" type="d:namedcontent" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="section" type="d:sectioncontent" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="properties">
@@ -104,8 +132,13 @@
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element name="mapper" type="xslm:mapper"/>
                 <xs:element name="template" type="xslt:template"/>
+                <xs:element name="fragment" type="xslm:fragment"/>
             </xs:choice>
         </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="text" xml:space="preserve">
+        <xs:choice/>
+        <xs:attribute name="s" type="xs:string" use="optional"/>
     </xs:complexType>
     <xs:complexType name="namedempty">
         <xs:choice/>
@@ -171,14 +204,22 @@
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
+    <xs:complexType name="sectioncontent" mixed="true">
+        <xs:sequence>
+            <xs:group ref="d:content" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="abstract" type="d:yes" use="optional"/>
+        <xs:attribute name="context" type="xs:string" use="optional"/>
+    </xs:complexType>
     <xs:attributeGroup name="if">
         <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="not" type="xs:string" fixed="yes" use="optional"/>
+        <xs:attribute name="not" type="d:yes" use="optional"/>
     </xs:attributeGroup>
     <xs:attributeGroup name="for">
         <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="parent" fixed="yes" use="optional"/>
-        <xs:attribute name="root" fixed="yes" use="optional"/>
+        <xs:attribute name="parent" type="d:yes" use="optional"/>
+        <xs:attribute name="root" type="d:yes" use="optional"/>
     </xs:attributeGroup>
     <xs:complexType name="ifcontent" mixed="true">
         <xs:sequence>
@@ -204,4 +245,9 @@
         </xs:sequence>
         <xs:attributeGroup ref="d:if"/>
     </xs:complexType>
+    <xs:simpleType name="yes">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="yes"/>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>

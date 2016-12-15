@@ -23,6 +23,13 @@
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
+    <xs:complexType mixed="true" name="fragment">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:group ref="sequence-constructor-group"/>
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="context" type="xs:string" use="optional"/>
+    </xs:complexType>
     <xs:complexType name="use" mixed="true">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:group ref="sequence-constructor-group"/>

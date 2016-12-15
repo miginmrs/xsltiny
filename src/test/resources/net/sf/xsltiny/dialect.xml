@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<d:document xmlns:d="http://xsltiny.sf.net/document" xmlns:xslm="alias://xsl/pure" xmlns:xslt="alias://xsl/content">
+    <d:output delimiter="&#10;"/>
+    <d:properties>
+        <d:property name="property1" value="put_fragment_1"/>
+    </d:properties>
+    <d:define>
+        <d:fragment name="fragment1">
+            <xslm:value-of select="$doc_properties/d:property[@name='property1']/@value"/>
+        </d:fragment>
+        <d:template name="duplicate">
+            <xslt:content/>
+            <xslt:content/>
+        </d:template>
+        <d:fragment name="in2" context="context2"><!--
+            -->#you are in context 2: <xslm:value-of select="@name"/>
+        </d:fragment>
+        <d:template name="go_from1to2" context="context1" target="context2">
+            <xslt:for-each select="child">
+                <xslt:content/>
+            </xslt:for-each>
+        </d:template>
+    </d:define>
+    <d:section name="abstract_section" abstract="yes" context="context1">
+        <d:use name="name"/><d:br/>
+    </d:section>
+    <d:section name="section1">
+        <d:for name="context1">#context1<d:br/>
+            <d:import name="abstract_section"/>
+            <d:with name="duplicate">
+                <d:put name="fragment1"/><d:br/>
+            </d:with>
+            <d:for name="context2">#context2<d:br/>
+                <d:with name="duplicate">
+                    <d:put name="fragment1"/><d:br/>
+                </d:with>
+            </d:for>
+            <d:with name="go_from1to2">
+                <d:put name="in2"/><d:br/>
+            </d:with>
+            <d:ivar name="list"><d:for name="context2"><d:for name="context1" root="yes">
+                <d:item><d:use name="name"/></d:item>
+            </d:for></d:for></d:ivar>
+            <d:join delimiter=","><d:ilay name="list"/></d:join><d:br/>
+        </d:for>
+    </d:section>
+</d:document>

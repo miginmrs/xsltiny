@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<c:document xmlns:c="http://xsltiny.sf.net/context" xmlns:xslm="alias://xsl/pure">
+    <c:properties/>
+    <c:default-context>
+        <c:use name="default">
+            <xslm:value-of select="'default-value'"/>
+        </c:use>
+    </c:default-context>
+    <c:context name="context0" path="/root">
+        <c:use name="name">
+            <xslm:value-of select="@name"/>
+        </c:use>
+    </c:context>
+    <c:context name="context1" path="element" parent="context0" length="1">
+        <c:use name="name">
+            <xslm:value-of select="@name"/>
+        </c:use>
+    </c:context>
+    <c:context name="context2" path="child" parent="context1" length="1">
+        <c:use name="name">
+            <xslm:value-of select="@name"/>
+        </c:use>
+    </c:context>
+</c:document>

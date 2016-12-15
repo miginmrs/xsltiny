@@ -41,8 +41,38 @@
     <xs:group name="sequence-constructor-group">
         <xs:choice>
             <xs:element ref="variable"/>
-            <xs:element ref="instruction"/>
+            <xs:group ref="instruction"/>
             <xs:group ref="result-elements"/>
+        </xs:choice>
+    </xs:group>
+
+    <xs:group name="instruction">
+        <xs:choice>
+            <xs:element ref="analyze-string"/>
+            <xs:element ref="apply-imports"/>
+            <xs:element ref="apply-templates"/>
+            <xs:element ref="attribute"/>
+            <xs:element ref="call-template"/>
+            <xs:element ref="choose"/>
+            <xs:element ref="comment"/>
+            <xs:element ref="copy"/>
+            <xs:element ref="copy-of"/>
+            <xs:element ref="document"/>
+            <xs:element ref="element"/>
+            <xs:element ref="fallback"/>
+            <xs:element ref="for-each"/>
+            <xs:element ref="for-each-group"/>
+            <xs:element ref="if"/>
+            <xs:element ref="message"/>
+            <xs:element ref="namespace"/>
+            <xs:element ref="next-match"/>
+            <xs:element ref="number"/>
+            <xs:element ref="perform-sort"/>
+            <xs:element ref="processing-instruction"/>
+            <xs:element ref="result-document"/>
+            <xs:element ref="sequence"/>
+            <xs:element ref="text"/>
+            <xs:element ref="value-of"/>
         </xs:choice>
     </xs:group>
 
@@ -50,7 +80,7 @@
 
     <xs:element name="instruction" type="versioned-element-type" abstract="true"/>
 
-    <xs:element name="analyze-string" substitutionGroup="instruction">
+    <xs:element name="analyze-string">
         <xs:complexType>
             <xs:complexContent>
                 <xs:extension base="element-only-versioned-element-type">
@@ -67,7 +97,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="apply-imports" substitutionGroup="instruction">
+    <xs:element name="apply-imports">
         <xs:complexType>
             <xs:complexContent>
                 <xs:extension base="element-only-versioned-element-type">
@@ -79,7 +109,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="apply-templates" substitutionGroup="instruction">
+    <xs:element name="apply-templates">
         <xs:complexType>
             <xs:complexContent>
                 <xs:extension base="element-only-versioned-element-type">
@@ -94,7 +124,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="attribute" substitutionGroup="instruction">
+    <xs:element name="attribute">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="sequence-constructor">
@@ -123,7 +153,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="call-template" substitutionGroup="instruction">
+    <xs:element name="call-template">
         <xs:complexType>
             <xs:complexContent>
                 <xs:extension base="element-only-versioned-element-type">
@@ -150,7 +180,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="choose" substitutionGroup="instruction">
+    <xs:element name="choose">
         <xs:complexType>
             <xs:complexContent>
                 <xs:extension base="element-only-versioned-element-type">
@@ -163,7 +193,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="comment" substitutionGroup="instruction">
+    <xs:element name="comment">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="sequence-constructor">
@@ -173,7 +203,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="copy" substitutionGroup="instruction">
+    <xs:element name="copy">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="sequence-constructor">
@@ -187,7 +217,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="copy-of" substitutionGroup="instruction">
+    <xs:element name="copy-of">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="versioned-element-type">
@@ -200,7 +230,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="document" substitutionGroup="instruction">
+    <xs:element name="document">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="sequence-constructor">
@@ -231,7 +261,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="element" substitutionGroup="instruction">
+    <xs:element name="element">
         <xs:complexType mixed="true">
             <xs:complexContent>
                 <xs:extension base="sequence-constructor">
@@ -246,9 +276,9 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="fallback" substitutionGroup="instruction" type="sequence-constructor"/>
+    <xs:element name="fallback" type="sequence-constructor"/>
 
-    <xs:element name="for-each" substitutionGroup="instruction">
+    <xs:element name="for-each">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="versioned-element-type">
@@ -262,7 +292,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="for-each-group" substitutionGroup="instruction">
+    <xs:element name="for-each-group">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="versioned-element-type">
@@ -297,7 +327,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="if" substitutionGroup="instruction">
+    <xs:element name="if">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="sequence-constructor">
@@ -356,7 +386,7 @@
 
     <xs:element name="matching-substring" type="sequence-constructor"/>
 
-    <xs:element name="message" substitutionGroup="instruction">
+    <xs:element name="message">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="sequence-constructor">
@@ -367,7 +397,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="namespace" substitutionGroup="instruction">
+    <xs:element name="namespace">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="sequence-constructor">
@@ -389,7 +419,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="next-match" substitutionGroup="instruction">
+    <xs:element name="next-match">
         <xs:complexType>
             <xs:complexContent>
                 <xs:extension base="element-only-versioned-element-type">
@@ -404,7 +434,7 @@
 
     <xs:element name="non-matching-substring" type="sequence-constructor"/>
 
-    <xs:element name="number" substitutionGroup="instruction">
+    <xs:element name="number">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="versioned-element-type">
@@ -477,7 +507,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="perform-sort" substitutionGroup="instruction">
+    <xs:element name="perform-sort">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="versioned-element-type">
@@ -501,7 +531,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="processing-instruction" substitutionGroup="instruction">
+    <xs:element name="processing-instruction">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="sequence-constructor">
@@ -512,7 +542,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="result-document" substitutionGroup="instruction">
+    <xs:element name="result-document">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="sequence-constructor">
@@ -541,7 +571,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="sequence" substitutionGroup="instruction">
+    <xs:element name="sequence">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="element-only-versioned-element-type">
@@ -611,7 +641,7 @@
         </xs:simpleContent>
     </xs:complexType>
 
-    <xs:element name="text" substitutionGroup="instruction">
+    <xs:element name="text">
         <xs:complexType>
             <xs:simpleContent>
                 <xs:extension base="text-element-base-type">
@@ -651,7 +681,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="value-of" substitutionGroup="instruction">
+    <xs:element name="value-of">
         <xs:complexType>
             <xs:complexContent mixed="true">
                 <xs:extension base="sequence-constructor">
@@ -663,17 +693,17 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="variable">
-        <xs:complexType>
-            <xs:complexContent mixed="true">
-                <xs:extension base="sequence-constructor">
-                    <xs:attribute name="name" type="QName" use="required"/>
-                    <xs:attribute name="select" type="expression" use="optional"/>
-                    <xs:attribute name="as" type="sequence-type" use="optional"/>
-                </xs:extension>
-            </xs:complexContent>
-        </xs:complexType>
-    </xs:element>
+    <xs:complexType name="variable-type">
+        <xs:complexContent mixed="true">
+            <xs:extension base="sequence-constructor">
+                <xs:attribute name="name" type="QName" use="required"/>
+                <xs:attribute name="select" type="expression" use="optional"/>
+                <xs:attribute name="as" type="sequence-type" use="optional"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="variable" type="variable-type"/>
 
     <xs:element name="when">
         <xs:complexType>

@@ -1,21 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:d="http://xsltiny.sf.net/document"
-           xmlns="alias://xsl/content"
+           xmlns:xslm="alias://xsl/pure"
+           xmlns:xslt="alias://xsl/content"
            targetNamespace="alias://xsl/content"
            elementFormDefault="qualified" attributeFormDefault="unqualified">
     <xs:import namespace="http://xsltiny.sf.net/document" schemaLocation="document.xsd"/>
+    <xs:import namespace="alias://xsl/pure" schemaLocation="xslpure.xsd"/>
     <xs:redefine schemaLocation="../../../../org/w3/xslt20.nons.xsd">
-        <xs:group name="result-elements">
+        <xs:group name="instruction">
             <xs:choice>
-                <xs:element ref="d:content"/>
+                <xs:element ref="xslt:choose"/>
+                <xs:element ref="xslt:fallback"/>
+                <xs:element ref="xslt:for-each"/>
+                <xs:element ref="xslt:for-each-group"/>
+                <xs:element ref="xslt:if"/>
+                <xs:element ref="xslt:perform-sort"/>
             </xs:choice>
         </xs:group>
+
+        <xs:group name="result-elements">
+            <xs:choice>
+                <xs:element ref="xslt:literal-result-element"/>
+                <xs:element ref="xslm:variable"/>
+            </xs:choice>
+        </xs:group>
+        <xs:complexType name="generic-element-type">
+            <xs:complexContent mixed="false">
+                <xs:extension base="xslt:generic-element-type"/>
+            </xs:complexContent>
+        </xs:complexType>
     </xs:redefine>
+    <xs:element name="content" type="d:empty" substitutionGroup="xslt:literal-result-element"/>
     <xs:complexType mixed="true" name="template">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:group ref="sequence-constructor-group"/>
+            <xs:group ref="xslt:sequence-constructor-group"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="context" type="xs:string" use="optional"/>
+        <xs:attribute name="target" type="xs:string" use="optional"/>
     </xs:complexType>
 </xs:schema>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+    <element name="e1">
+        <child name="c11"/>
+        <child name="c12"/>
+    </element>
+    <element name="e2">
+        <child name="c21"/>
+        <child name="c22"/>
+    </element>
+</root>

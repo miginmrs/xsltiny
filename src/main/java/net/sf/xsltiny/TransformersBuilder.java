@@ -1,9 +1,6 @@
 package net.sf.xsltiny;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -28,11 +25,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class TransformersBuilder {
     private static final String XSL_URI = "http://www.w3.org/1999/XSL/Transform";
     private static final String D_URI = "http://xsltiny.sf.net/document";
     private static final TransformerFactory transformerFactory;
-    private static final DocumentBuilder builder;
     private static final SchemaFactory schemaFactory;
     private static final DocumentBuilder documentBuilder;
     private static final DocumentBuilder contextBuilder;
@@ -43,6 +40,7 @@ public class TransformersBuilder {
     private static final XPathExpression propertyNameXPath;
     private static final XPathExpression propertyValueXPath;
     private static final XPathExpression elementsXPath;
+    public static final DocumentBuilder builder;
 
     private final Transformer transformer;
     private static class SimpleErrorHandler implements ErrorHandler{
@@ -52,10 +50,12 @@ public class TransformersBuilder {
         }
         @Override
         public void error(SAXParseException exception) throws SAXException {
+            assert exception != null;
             throw exception;
         }
         @Override
         public void fatalError(SAXParseException exception) throws SAXException {
+            assert exception != null;
             throw exception;
         }
     }
@@ -69,7 +69,7 @@ public class TransformersBuilder {
         try {
             builder = builderFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
-            throw new Error("Unable to create a document builder for XML usage");
+            throw new Error("Unable to create a document builder for XML usage: "+e.getMessage());
         }
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setNamespaceAware(true);
@@ -80,7 +80,7 @@ public class TransformersBuilder {
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
             documentBuilder.setErrorHandler(new SimpleErrorHandler());
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new Error("Unable to create a document builder for XML usage");
+            throw new Error("Unable to create a document builder for XML usage: "+e.getMessage());
         }
         DocumentBuilderFactory contextBuilderFactory = DocumentBuilderFactory.newInstance();
         contextBuilderFactory.setNamespaceAware(true);
@@ -91,7 +91,7 @@ public class TransformersBuilder {
             contextBuilder = contextBuilderFactory.newDocumentBuilder();
             contextBuilder.setErrorHandler(new SimpleErrorHandler());
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new Error("Unable to create a context builder for XML usage");
+            throw new Error("Unable to create a context builder for XML usage: "+e.getMessage());
         }
         try {
             final Map<String, String> namespaces = new HashMap<String, String>(){{
@@ -217,18 +217,21 @@ public class TransformersBuilder {
     public Map<String, Transformer> getTransformers(URL documentURL) throws TransformerException, IOException {
         return getTransformers(loadDocument(documentURL));
     }
+
     public Map<String, Transformer> getTransformers(DocumentData documentData) throws TransformerException {
-        if(documentData.builder!=documentBuilder)
-            throw new TransformerConfigurationException("Document must be created using document builder");
-        Document output = builder.newDocument();
-        transformer.transform(new DOMSource(documentData.document), new DOMResult(output));
+        return getTransformersFromXsl(getTransformersDocument(documentData));
+    }
+
+    public static Map<String, Transformer> getTransformersFromXsl(Document xslDocument) throws TransformerException {
         NodeList nodes;
         try {
-            nodes = (NodeList) elementsXPath.evaluate(output.getDocumentElement(), XPathConstants.NODESET);
+            nodes = (NodeList) elementsXPath.evaluate(xslDocument.getDocumentElement(), XPathConstants.NODESET);
         } catch (XPathExpressionException e) {
             throw new TransformerException(e);
         }
         return new HashMap<String, Transformer>(){{
+            Attr attr = xslDocument.getDocumentElement().getAttributeNode("xmlns:d");
+            if(attr==null) throw new AssertionError("xmlns:d is not an attr: "+xslDocument.getDocumentElement().getPrefix());
             for(int i = 0, n = nodes.getLength(); i < n ; i++) {
                 Node node = nodes.item(i);
                 String name = ((Element)node).getAttribute("name");
@@ -239,9 +242,28 @@ public class TransformersBuilder {
                     continue;
                 }
                 document.appendChild(document.importNode(node, true));
+                document.getDocumentElement().setAttributeNode((Attr) document.importNode(attr, false));
                 put(name, transformerFactory.newTransformer(new DOMSource(document)));
             }
         }};
+    }
+
+    private void transform(DocumentData documentData, Result result) throws TransformerException {
+        if(documentData.builder!=documentBuilder)
+            throw new TransformerConfigurationException("Document must be created using document builder");
+        transformer.transform(new DOMSource(documentData.document), result);
+    }
+
+    public Document getTransformersDocument(DocumentData documentData) throws TransformerException {
+        Document output = builder.newDocument();
+        transform(documentData, new DOMResult(output));
+        return output;
+    }
+
+    public String getTransformersData(DocumentData documentData) throws TransformerException {
+        StringWriter output = new StringWriter();
+        transform(documentData, new StreamResult(output));
+        return output.toString();
     }
 
     public static String render(Transformer transformer, Document document) throws TransformerException {

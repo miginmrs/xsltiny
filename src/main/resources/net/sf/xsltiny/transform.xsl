@@ -28,11 +28,23 @@
 
 	<xsl:variable name="templates" select="/d:document/d:define/d:template"/>
 
+	<xsl:variable name="fragments" select="/d:document/d:define/d:fragment"/>
+
+	<xsl:function name="d:getbyname" as="item()*">
+		<xsl:param name="name" as="xs:string"/>
+		<xsl:param name="nodes" as="item()*"/>
+		<xsl:sequence select="$nodes[@name=$name]"/>
+	</xsl:function>
+
 	<xsl:function name="d:context" as="item()*">
 		<xsl:param name="node"/>
+		<xsl:variable name="mutators" select="($node/ancestor::d:*)/(self::d:for/@name,self::d:with[d:getbyname(@name,$templates)[@target]/@target])"/>
 		<xsl:choose>
-			<xsl:when test="$node/ancestor::d:for">
-				<xsl:copy-of select="$document/ctx:context[@name=($node/ancestor::d:for)[last()]/@name]"/>
+			<xsl:when test="$mutators">
+				<xsl:copy-of select="$document/ctx:context[@name=$mutators[last()]]"/>
+			</xsl:when>
+			<xsl:when test="not($mutators) and $node/ancestor-or-self::d:section[1]/@context">
+				<xsl:copy-of select="$document/ctx:context[@name=$node/ancestor-or-self::d:section[1]/@context]"/>
 			</xsl:when>
 			<!-- The first context without parent is the default context -->
 			<xsl:otherwise><xsl:copy-of select="$document/ctx:context[not(@parent)][1]"/></xsl:otherwise>
@@ -49,7 +61,7 @@
 			<xsl:choose>
 				<xsl:when test="$case1"><xsl:value-of select="$context/@path"/></xsl:when>
 				<xsl:when test="not($case1) and $case2">
-					<xsl:value-of select="$context[@name=$context/@parent]/@path"/>/<xsl:value-of select="$context/@path"/>
+					<xsl:value-of select="$document/ctx:context[@name=$context/@parent]/@path"/>/<xsl:value-of select="$context/@path"/>
 				</xsl:when>
 				<xsl:when test="not($case2) and not($node/@parent='yes') and $current/@name=$context/@parent"><xsl:value-of select="$context/@path"/></xsl:when>
 				<xsl:when test="not($case2) and $node/@parent='yes' and $current/@parent=$node/@name and $current/@length">ascendant::*[last()+1-<xsl:value-of select="$current/@length"/>]</xsl:when>
@@ -66,6 +78,12 @@
 		<xsl:copy-of select="$target"/>
 	</xsl:function>
 
+	<xsl:function name="d:section" as="item()*">
+		<xsl:param name="name" as="xs:string"/>
+		<xsl:param name="node" as="item()*"/>
+		<xsl:sequence select="$node/ancestor-or-self::d:section[1]/preceding-sibling::d:section[@name=$name and d:context(.)/@name=d:context($node)/@name]"/>
+	</xsl:function>
+
 	<xsl:function name="d:getns" as="item()*">
 		<xsl:param name="node"/>
         <xsl:variable name="namespaces" select="$node/ancestor::d:document/namespace::* | $node/namespace::*"/>
@@ -77,7 +95,7 @@
 
 	<xsl:template match="/">
 		<xsl:element name="d:document">
-			<xsl:for-each select="d:document/d:section">
+			<xsl:for-each select="d:document/d:section[not(@abstract)]">
 				<xsl:element name="d:section">
 					<xsl:attribute name="name" select="@name"/>
 					<x:stylesheet version="2.0">
@@ -102,7 +120,7 @@
 	<xsl:template match="d:var" mode="normal" priority="1"><x:variable name="v_{@name}"><xsl:apply-templates mode="normal"/></x:variable></xsl:template>
 	<xsl:template match="d:ivar" mode="normal" priority="1"><x:variable name="iv_{@name}"><xsl:apply-templates mode="normal"/></x:variable></xsl:template>
 	<xsl:template match="d:lay" mode="normal" priority="1"><x:value-of select="$v_{@name}"/></xsl:template>
-	<xsl:template match="d:ilay" mode="normal" priority="1"><x:value-of select="$iv_{@name}"/></xsl:template>
+	<xsl:template match="d:ilay" mode="normal" priority="1"><x:copy-of select="$iv_{@name}"/></xsl:template>
 
 	<xsl:template match="xslm:*" mode="xslpure" priority="1">
 		<xsl:element name="xsl:{local-name()}">
@@ -127,6 +145,15 @@
 		</d:item>
 	</xsl:template>
 
+	<xsl:template match="xslt:content" mode="xslcontent" priority="2">
+		<xsl:param name="content"/>
+		<xsl:apply-templates select="$content" mode="normal"/>
+	</xsl:template>
+
+	<xsl:template match="xslm:variable" mode="xslcontent" priority="1">
+        <xsl:apply-templates select="." mode="xslpure"/>
+	</xsl:template>
+
 	<xsl:template match="xslt:*" mode="xslcontent" priority="1">
 		<xsl:param name="content"/>
 		<xsl:element name="xsl:{local-name()}">
@@ -138,11 +165,6 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="d:content" mode="xslcontent" priority="1">
-		<xsl:param name="content"/>
-		<xsl:copy-of select="$content"/>
-	</xsl:template>
-
 	<xsl:template match="d:map" mode="normal" priority="1">
 		<x:variable name="param"><xsl:apply-templates mode="normal"/></x:variable>
 		<xsl:variable name="name"><xsl:value-of select="@name"/></xsl:variable>
@@ -151,15 +173,20 @@
 		</x:for-each>
 	</xsl:template>
 
-	<xsl:template match="d:with" mode="normal" priority="1">
-		<xsl:variable name="content"><xsl:apply-templates mode="normal"/></xsl:variable>
+	<xsl:template match="d:with[not(d:getbyname(@name, $templates)/@context!=d:context(.)/@name)]" mode="normal" priority="1">
+		<xsl:variable name="content" select="child::node()"/>
 		<xsl:variable name="name"><xsl:value-of select="@name"/></xsl:variable>
 		<xsl:apply-templates select="$templates[@name=$name]" mode="template">
 			<xsl:with-param name="content" select="$content"/>
 		</xsl:apply-templates>
 	</xsl:template>
 
-	<xsl:template match="d:mapper" mode="mapper" priority="1">
+	<xsl:template match="d:put[not(d:getbyname(@name, $fragments)/@context!=d:context(.)/@name)]" mode="normal" priority="1">
+		<xsl:variable name="name"><xsl:value-of select="@name"/></xsl:variable>
+		<xsl:apply-templates select="$fragments[@name=$name]" mode="mapper"/>
+	</xsl:template>
+
+	<xsl:template match="d:mapper | d:fragment" mode="mapper" priority="1">
 		<xsl:apply-templates mode="xslpure"/>
 	</xsl:template>
 
@@ -178,8 +205,8 @@
 		<x:variable name="list">
 			<xsl:apply-templates mode="normal"/>
 		</x:variable>
-		<x:value-of select="&#36;list/item[position()=1]"/>
-		<x:for-each select="&#36;list/item[position()!=1]">
+		<x:value-of select="&#36;list/d:item[position()=1]"/>
+		<x:for-each select="&#36;list/d:item[position()!=1]">
 			<xsl:value-of select="@delimiter"/><x:value-of select="."/>
 		</x:for-each>
 	</xsl:template>
@@ -195,7 +222,7 @@
 	</xsl:template>
 
 	<xsl:template match="*[@name]" mode="#all" priority="0">
-		<xsl:variable name="msg"><xsl:value-of select="name()"/>&#160;'<xsl:value-of select="@name"/>' is not allowed in `<xsl:value-of select="d:context(.)/@name"/>` scope </xsl:variable>
+		<xsl:variable name="msg"><xsl:value-of select="name()"/> '<xsl:value-of select="@name"/>' is not allowed in `<xsl:value-of select="d:context(.)/@name"/>` scope </xsl:variable>
 		<xsl:message terminate="yes"><xsl:value-of select="trace(., $msg)"/></xsl:message>
 	</xsl:template>
 
@@ -217,10 +244,10 @@
 		</x:if>
 	</xsl:template>
 
-	<xsl:template match="d:link[d:call(.)]" mode="normal" priority="1">
+	<xsl:template match="d:link[(not(@target) and d:call(.)[not(@target)]) or @target=d:call(.)/@target]" mode="normal" priority="1">
 		<xsl:variable name="link" select="d:call(.)"/>
         <xsl:if test="$link/@link">
-            <x:variable name="link"><xsl:value-of select="ancestor::d:link[last()]"/></x:variable>
+            <x:variable name="link"><xsl:value-of select="ancestor::d:link[last()]/@name"/></x:variable>
         </xsl:if>
         <x:if test="{$link/@test}">
 			<xsl:apply-templates mode="normal"/>
@@ -230,7 +257,7 @@
 	<xsl:template match="d:use[d:call(.)]" mode="normal" priority="1">
         <xsl:variable name="use" select="d:call(.)"/>
         <xsl:if test="$use/@link">
-            <x:variable name="link"><xsl:value-of select="ancestor::d:link[last()]"/></x:variable>
+            <x:variable name="link"><xsl:value-of select="ancestor::d:link[last()]/@name"/></x:variable>
         </xsl:if>
 		<xsl:apply-templates mode="mapper" select="$use"/>
 	</xsl:template>
@@ -238,7 +265,7 @@
 	<xsl:template match="d:list[d:call(.)]" mode="normal" priority="1">
         <xsl:variable name="list" select="d:call(.)"/>
         <xsl:if test="$list/@link">
-            <x:variable name="link"><xsl:value-of select="ancestor::d:link[last()]"/></x:variable>
+            <x:variable name="link"><xsl:value-of select="ancestor::d:link[last()]/@name"/></x:variable>
         </xsl:if>
 		<xsl:apply-templates mode="xslitem" select="$list/*"/>
 	</xsl:template>
@@ -249,5 +276,22 @@
 		</x:for-each>
 	</xsl:template>
 
+	<xsl:template match="d:import[d:section(@name,.)]" mode="normal" priority="1">
+		<xsl:apply-templates select="d:section(@name,.)" mode="section"/>
+	</xsl:template>
+
+	<xsl:template match="text()" mode="#all" priority="1">
+		<xsl:value-of select="replace(., '^(.*?)&#10;[ &#9;]*$', '$1', 's')"/>
+	</xsl:template>
+
+	<xsl:template match="d:out" mode="normal" priority="1">
+		<x:text><xsl:value-of select="@s|." xml:space="preserve"/></x:text>
+	</xsl:template>
+
+	<xsl:variable name="delimiter" select="/d:document/d:output/@delimiter"/>
+	<xsl:variable name="br" select="if($delimiter) then $delimiter else '&#10;'"/>
+	<xsl:template match="d:br" mode="normal" priority="1">
+		<x:value-of select="'{$br}'" xml:space="preserve" disable-output-escaping="yes"/>
+	</xsl:template>
 
 </xsl:stylesheet>

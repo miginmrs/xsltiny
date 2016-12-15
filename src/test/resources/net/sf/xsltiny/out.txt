@@ -1,0 +1,26 @@
+#context1
+e1
+put_fragment_1
+put_fragment_1
+#context2
+put_fragment_1
+put_fragment_1
+#context2
+put_fragment_1
+put_fragment_1
+#you are in context 2: c11
+#you are in context 2: c12
+e1,e2,e1,e2
+#context1
+e2
+put_fragment_1
+put_fragment_1
+#context2
+put_fragment_1
+put_fragment_1
+#context2
+put_fragment_1
+put_fragment_1
+#you are in context 2: c21
+#you are in context 2: c22
+e1,e2,e1,e2
